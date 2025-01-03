@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id
+  address     String       @unique
+  reputation  Int          @default(0)
+  bounties    Bounty[]     @relation("CreatedBounties")
+  submissions Submission[]
+  createdAt   DateTime     @default(now())
+
+  @@index([address])
+}
+
+model Bounty {
+  id            String          @id @default(cuid())
+  creator       User            @relation("CreatedBounties", fields: [creatorId], references: [id])
+  creatorId     String
+  title         String
+  description   String          @db.Text
+  requirements  String[]
+  reward        Float
+  isOpen        Boolean         @default(false)
+  isEducational Boolean         @default(false)
+  status        BountyStatus    @default(ACTIVE)
+  submissions   Submission[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([creatorId])
+}
+
+model Submission {
+  id          String           @id @default(cuid())
+  bounty      Bounty           @relation(fields: [bountyId], references: [id])
+  bountyId    String
+  submitter   User             @relation(fields: [submitterId], references: [id])
+  submitterId String
+  content     String           @db.Text
+  aiScore     Int?
+  status      SubmissionStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+
+  @@index([bountyId])
+  @@index([submitterId])
+}
+
+enum BountyStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum SubmissionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  IMPROVED
+}
