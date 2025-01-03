@@ -6,7 +6,6 @@ import { WalletButton } from "@/components/wallet-button";
 export default function DashboardPage() {
   return (
     <div className="container mx-auto py-8">
-         <WalletButton/>
       <h1 className="mb-8 text-4xl font-bold">Dashboard</h1>
 
       <div className="mb-8">
