@@ -1,7 +1,8 @@
 "use client";
 
-import { api } from "@/lib/api";
-import { BountyCard } from "./BountyCard";
+import { api } from "@/trpc/react";
+
+import { BountyCard } from "./bounty-card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function BountyList() {

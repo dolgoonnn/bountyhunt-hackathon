@@ -6,10 +6,10 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
-
+import { type Session } from "../auth/types";
 import { db } from "@/server/db";
 
 /**
@@ -24,10 +24,32 @@ import { db } from "@/server/db";
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+
+interface CreateContextOptions {
+  session: Session | null;
+  headers: Headers;
+}
+export const createTRPCContext = async (opts: {
+  headers: Headers;
+  session?: Session | null;
+}) => {
+  // const { headers, session } = opts;
+  let session: Session | null = null;
+
+  const sessionHeader = opts.headers.get('x-session');
+  console.log("🚀 ~ sessionHeader:", sessionHeader)
+  if (sessionHeader) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      session = JSON.parse(sessionHeader);
+    } catch (e) {
+      console.error('Failed to parse session from header:', e);
+    }
+  }
   return {
     db,
-    ...opts,
+    session,
+    headers: opts.headers,
   };
 };
 
@@ -95,6 +117,22 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 
   return result;
 });
+
+const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
+console.log("🚀 ~ enforceUserIsAuthed ~ ctx:", ctx.session)
+
+  if (!ctx.session?.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      session: { ...ctx.session, user: ctx.session.user },
+    },
+  });
+});
+
+export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
 
 /**
  * Public (unauthenticated) procedure

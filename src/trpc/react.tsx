@@ -9,6 +9,7 @@ import SuperJSON from "superjson";
 
 import { type AppRouter } from "@/server/api/root";
 import { createQueryClient } from "./query-client";
+import { useAuthStore } from "@/hooks/useAuthStore";
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
 const getQueryClient = () => {
@@ -36,6 +37,14 @@ export type RouterInputs = inferRouterInputs<AppRouter>;
  */
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
 
+export const getHeaders = () => {
+  const session = useAuthStore.getState().session;
+  console.log("🚀 ~ getHeaders ~ session:", session)
+  return {
+    'x-session': session ? JSON.stringify(session) : '',
+  };
+};
+
 export function TRPCReactProvider(props: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
 
@@ -53,12 +62,17 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           headers: () => {
             const headers = new Headers();
             headers.set("x-trpc-source", "nextjs-react");
+            const sessionHeaders = getHeaders();
+            Object.entries(sessionHeaders).forEach(([key, value]) => {
+              headers.set(key, value);
+            });
             return headers;
           },
         }),
       ],
-    })
+    }),
   );
+
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/lib/api";
+import { api } from "@/trpc/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 
@@ -50,7 +50,10 @@ export function CreateBountyForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((data) => createBounty.mutate(data))} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit((data) => createBounty.mutate(data))}
+        className="space-y-6"
+      >
         <FormField
           control={form.control}
           name="title"
@@ -100,7 +103,10 @@ export function CreateBountyForm() {
             <FormItem>
               <FormLabel>Reward (ETH)</FormLabel>
               <FormControl>
-                <Input type="number" step="0.01" {...field} />
+                <Input type="number" step="0.01" {...field}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value))}
+
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -1,5 +1,10 @@
 import { type RouterOutputs } from "@/lib/api";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDistance } from "@/lib/utils";
 import Link from "next/link";
@@ -19,7 +24,9 @@ export function BountyCard({ bounty }: { bounty: Bounty }) {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground line-clamp-2">{bounty.description}</p>
+        <p className="line-clamp-2 text-muted-foreground">
+          {bounty.description}
+        </p>
         <div className="mt-4 flex items-center gap-4">
           <div>
             <p className="text-sm text-muted-foreground">Reward</p>
