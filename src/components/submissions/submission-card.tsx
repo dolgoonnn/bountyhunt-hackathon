@@ -1,9 +1,9 @@
-import { type RouterOutputs } from "@/lib/api";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDistance } from "@/lib/utils";
+import type { Submission } from "@prisma/client";
 
-type Submission = RouterOutputs["submission"]["list"][0];
+
 
 export function SubmissionCard({ submission }: { submission: Submission }) {
   return (
@@ -11,8 +11,8 @@ export function SubmissionCard({ submission }: { submission: Submission }) {
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
-            Submitted by {submission.submitter.address.slice(0, 6)}...
-            {submission.submitter.address.slice(-4)}
+            Submitted by {submission.submitterId.slice(0, 6)}...
+            {submission.submitterId.slice(-4)}
           </span>
           <span className="text-sm text-muted-foreground">•</span>
           <span className="text-sm text-muted-foreground">
@@ -40,11 +40,11 @@ export function SubmissionCard({ submission }: { submission: Submission }) {
 function getStatusVariant(status: Submission["status"]) {
   switch (status) {
     case "ACCEPTED":
-      return "success";
+      return "default"; // Changed from "success"
     case "REJECTED":
       return "destructive";
     case "IMPROVED":
-      return "warning";
+      return "outline"; // Changed from "warning"
     default:
       return "secondary";
   }

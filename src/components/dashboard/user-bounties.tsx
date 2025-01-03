@@ -1,7 +1,7 @@
 "use client";
 
-import { api } from "@/lib/api";
-import { BountyCard } from "@/components/bounties/BountyCard";
+import { api } from "@/trpc/react";;
+import { BountyCard } from "@/components/bounties/bounty-card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export function UserBounties() {
@@ -14,7 +14,7 @@ export function UserBounties() {
   if (!bounties?.length) {
     return (
       <div className="py-8 text-center text-muted-foreground">
-        You haven't created any bounties yet
+        You haven`&apos;`t created any bounties yet
       </div>
     );
   }

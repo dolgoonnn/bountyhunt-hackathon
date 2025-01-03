@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { TRPCReactProvider } from "@/trpc/react";
+import { Navbar } from "@/components/Navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,13 +20,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <TRPCReactProvider>
-      <WagmiProviderContext>
-          <AuthProvider>
-            <body className={inter.className}>{children}</body>
-          </AuthProvider>
-        </WagmiProviderContext>
-      </TRPCReactProvider>
+      <body className={inter.className}>
+        <TRPCReactProvider>
+          <WagmiProviderContext>
+            <AuthProvider>
+              <Navbar />
+              <main>
+                {children}
+              </main>
+            </AuthProvider>
+          </WagmiProviderContext>
+        </TRPCReactProvider>
+      </body>
     </html>
   );
 }

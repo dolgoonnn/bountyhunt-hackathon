@@ -1,6 +1,5 @@
 "use client";
-
-import { api } from "@/lib/api";
+import { api } from "@/trpc/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -30,7 +29,7 @@ export function BountyDetails({ id }: { id: string }) {
             {formatDistance(bounty.createdAt)}
           </p>
         </div>
-        <Badge variant={bounty.isOpen ? "success" : "secondary"}>
+        <Badge variant={bounty.isOpen ? "default" : "secondary"}>
           {bounty.status}
         </Badge>
       </div>

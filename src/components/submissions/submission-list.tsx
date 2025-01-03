@@ -1,6 +1,6 @@
 "use client";
 
-import { api } from "@/lib/api";
+import { api } from "@/trpc/react";;
 import { SubmissionCard } from "./submission-card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
@@ -13,7 +13,7 @@ export function SubmissionList({ bountyId }: { bountyId: string }) {
     return <LoadingSpinner />;
   }
 
-  if (!submissions?.length) {
+  if (!submissions?.items.length) {
     return (
       <div className="py-8 text-center text-muted-foreground">
         No submissions yet
@@ -23,7 +23,7 @@ export function SubmissionList({ bountyId }: { bountyId: string }) {
 
   return (
     <div className="space-y-4">
-      {submissions.map((submission) => (
+      {submissions?.items?.map((submission) => (
         <SubmissionCard key={submission.id} submission={submission} />
       ))}
     </div>

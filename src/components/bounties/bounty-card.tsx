@@ -1,4 +1,4 @@
-import { type RouterOutputs } from "@/lib/api";
+import type { Bounty } from "@prisma/client";
 import {
   Card,
   CardContent,
@@ -10,7 +10,8 @@ import { formatDistance } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-type Bounty = RouterOutputs["bounty"]["list"]["items"][0];
+
+//todo Add bounty submissions count
 
 export function BountyCard({ bounty }: { bounty: Bounty }) {
   return (
@@ -18,7 +19,7 @@ export function BountyCard({ bounty }: { bounty: Bounty }) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <h3 className="text-xl font-semibold">{bounty.title}</h3>
-          <Badge variant={bounty.isOpen ? "success" : "secondary"}>
+          <Badge variant={bounty.isOpen ? "default" : "secondary"}>
             {bounty.status}
           </Badge>
         </div>

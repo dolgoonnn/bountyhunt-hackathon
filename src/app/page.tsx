@@ -8,7 +8,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col">
-      <WalletButton/>
+      {/* <WalletButton/> */}
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-white to-gray-50 px-4 py-20 dark:from-gray-900 dark:to-gray-800">
         <div className="mx-auto max-w-6xl text-center">
