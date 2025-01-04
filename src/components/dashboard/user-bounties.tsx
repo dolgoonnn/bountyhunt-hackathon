@@ -14,7 +14,7 @@ export function UserBounties() {
   if (!bounties?.length) {
     return (
       <div className="py-8 text-center text-muted-foreground">
-        You haven`&apos;`t created any bounties yet
+        You haven&apos;t created any bounties yet
       </div>
     );
   }

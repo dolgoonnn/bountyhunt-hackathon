@@ -91,6 +91,7 @@ export const userRouter = createTRPCRouter({
           user: {
             id: user.id,
             address: user.address,
+            reputation: user.reputation,
           },
         };
 
@@ -102,6 +103,7 @@ export const userRouter = createTRPCRouter({
         user: {
           id: user.id,
           address: user.address,
+          reputation: user.reputation,
         },
       };
     }),
