@@ -15,7 +15,7 @@ export function BountyList() {
   }
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-12">
       {data?.items.map((bounty) => (
         <BountyCard key={bounty.id} bounty={bounty} />
       ))}

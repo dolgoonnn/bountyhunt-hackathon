@@ -11,7 +11,7 @@ interface EducationalFilterProps {
 export function EducationalFilter({ value, onChange }: EducationalFilterProps) {
   return (
     <div className="flex items-center justify-between">
-      <Label>Educational Only</Label>
+      <Label className="text-white">Educational Only</Label>
       <Switch
         checked={value === true}
         onCheckedChange={(checked) => onChange(checked ? true : null)}

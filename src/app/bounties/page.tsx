@@ -1,12 +1,14 @@
 import { BountyFilters } from "@/components/bounties/bounty-filter";
 import { BountyList } from "@/components/bounties/bounty-list";
+import { motion } from "framer-motion";
+
 
 export default function BountiesPage() {
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="mb-4 text-4xl font-bold">Available Bounties</h1>
-        <p className="text-muted-foreground">
+        <h1 className="mb-2 text-4xl font-bold text-white">Available Bounties</h1>
+        <p className="text-gray-100">
           Discover and work on exciting development bounties
         </p>
       </div>

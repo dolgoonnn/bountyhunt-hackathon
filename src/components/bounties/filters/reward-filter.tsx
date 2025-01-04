@@ -12,7 +12,7 @@ interface RewardFilterProps {
 export function RewardFilter({ value, onChange, max }: RewardFilterProps) {
   return (
     <div className="space-y-2">
-      <Label>Reward Range (ETH)</Label>
+      <Label className="text-white">Reward Range (ETH)</Label>
       <Slider
         min={0}
         max={max}
@@ -20,7 +20,7 @@ export function RewardFilter({ value, onChange, max }: RewardFilterProps) {
         value={value}
         onValueChange={onChange as (value: number[]) => void}
       />
-      <div className="flex justify-between text-sm text-muted-foreground">
+      <div className="flex justify-between text-sm text-white">
         <span>{value[0]} ETH</span>
         <span>{value[1]} ETH</span>
       </div>
