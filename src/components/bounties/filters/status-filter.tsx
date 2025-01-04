@@ -12,19 +12,19 @@ interface StatusFilterProps {
 export function StatusFilter({ value, onChange }: StatusFilterProps) {
   return (
     <div className="space-y-2">
-      <Label>Status</Label>
+      <Label className="text-white">Status</Label>
       <RadioGroup value={value} onValueChange={onChange}>
         <div className="flex items-center space-x-2">
-          <RadioGroupItem value="ALL" id="all" />
-          <Label htmlFor="all">All</Label>
+          <RadioGroupItem className="" value="ALL" id="all" />
+          <Label className="text-white" htmlFor="all">All</Label>
         </div>
         <div className="flex items-center space-x-2">
           <RadioGroupItem value="ACTIVE" id="active" />
-          <Label htmlFor="active">Active</Label>
+          <Label className="text-white" htmlFor="active">Active</Label>
         </div>
         <div className="flex items-center space-x-2">
           <RadioGroupItem value="COMPLETED" id="completed" />
-          <Label htmlFor="completed">Completed</Label>
+          <Label className="text-white" htmlFor="completed">Completed</Label>
         </div>
       </RadioGroup>
     </div>
