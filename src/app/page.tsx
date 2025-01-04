@@ -38,7 +38,7 @@ export default function Home() {
       <section className="py-20">
         <div className="mx-auto max-w-6xl px-4">
           <h2 className="mb-12 text-center text-3xl font-bold">
-            Why Choose BountyBase?
+            Why Choose QuestHub?
           </h2>
           <div className="grid gap-8 md:grid-cols-3">
             <Card className="p-6">
