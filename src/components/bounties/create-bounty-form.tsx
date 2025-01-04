@@ -250,7 +250,7 @@ export function CreateBountyForm() {
                         step="0.01"
                         {...field}
                         onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                        className="bg-gray-900/50 border-gray-700 focus:border-purple-500 transition-colors"
+                        className="bg-gray-900/50 focus:outline-none text-white border-gray-700 focus:border-purple-500 transition-colors"
                       />
                     </FormControl>
                     <FormMessage />
