@@ -23,6 +23,10 @@ import { motion } from "framer-motion";
 import { Coins, FileText, ListChecks, Loader2, PenSquare } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
+interface BountyData extends FormData {
+  id: string;
+}
+
 const createBountySchema = z.object({
   title: z.string().min(1).max(100),
   description: z.string().min(1),
@@ -51,7 +55,7 @@ const inputAnimation = {
 export function CreateBountyForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const [currentFormData, setCurrentFormData] = useState<FormData | null>(null);
+  const [bountyData, setBountyData] = useState<BountyData | null>(null);
   const [isPendingBlockchainTx, setIsPendingBlockchainTx] = useState(false);
 
   const form = useForm<FormData>({
@@ -66,16 +70,32 @@ export function CreateBountyForm() {
     isLoading: isContractLoading,
     error: contractError,
     hash,
-    isSuccess
+    isSuccess,
   } = useBountyContract();
 
+  // Create bounty in database
   const createBountyMutation = api.bounty.create.useMutation({
-    onSuccess: () => {
-      toast({
-        title: "Bounty created successfully",
-        description: "Your bounty has been published",
+    onSuccess: async (response) => {
+      // Store the complete bounty data including the ID
+      setBountyData({
+        ...form.getValues(),
+        id: response.id,
       });
-      router.push("/bounties");
+
+      try {
+        setIsPendingBlockchainTx(true);
+        // Create blockchain bounty using the database ID
+        await createBountyContract(response.id, form.getValues("reward").toString());
+      } catch (error) {
+        console.error("Blockchain error:", error);
+        toast({
+          title: "Error creating blockchain bounty",
+          description: error instanceof Error ? error.message : "An unexpected error occurred",
+          variant: "destructive",
+        });
+        setIsPendingBlockchainTx(false);
+        setBountyData(null);
+      }
     },
     onError: (error) => {
       toast({
@@ -83,24 +103,25 @@ export function CreateBountyForm() {
         description: error.message,
         variant: "destructive",
       });
-      setCurrentFormData(null);
+      setBountyData(null);
       setIsPendingBlockchainTx(false);
     },
   });
 
+  // Watch for successful blockchain transaction
   useEffect(() => {
-    if (isSuccess && currentFormData && isPendingBlockchainTx) {
-      createBountyMutation.mutate({
-        title: currentFormData.title,
-        description: currentFormData.description,
-        requirements: currentFormData.requirements,
-        reward: currentFormData.reward,
-        isEducational: currentFormData.isEducational,
+    if (isSuccess && bountyData) {
+      toast({
+        title: "Bounty created successfully",
+        description: "Your bounty has been published",
       });
-      setCurrentFormData(null);
+      router.push("/bounties");
+      setBountyData(null);
+      setIsPendingBlockchainTx(false);
     }
-  }, [isSuccess, currentFormData, isPendingBlockchainTx]);
+  }, [isSuccess, bountyData, router, toast]);
 
+  // Show error if contract interaction fails
   useEffect(() => {
     if (contractError) {
       toast({
@@ -108,28 +129,29 @@ export function CreateBountyForm() {
         description: contractError.message,
         variant: "destructive",
       });
+      setBountyData(null);
+      setIsPendingBlockchainTx(false);
     }
   }, [contractError, toast]);
 
   const onSubmit = async (data: FormData) => {
+    if (isPendingBlockchainTx) return;
+
     try {
-      if (isPendingBlockchainTx) return;
-      setCurrentFormData(data);
-      setIsPendingBlockchainTx(true);
-      await createBountyContract(data.title, data.reward.toString());
+      // Create the bounty in the database first
+      await createBountyMutation.mutateAsync(data);
     } catch (error) {
-      console.error('Error creating bounty:', error);
+      console.error("Error creating bounty:", error);
       toast({
         title: "Error creating bounty",
         description: error instanceof Error ? error.message : "An unexpected error occurred",
         variant: "destructive",
       });
-      setCurrentFormData(null);
-      setIsPendingBlockchainTx(false);
     }
   };
 
-  const isSubmitting = isContractLoading || createBountyMutation.isPending;
+
+  const isSubmitting = isContractLoading || createBountyMutation.isPending || isPendingBlockchainTx;
 
   return (
     <Card className="p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 backdrop-blur-xl border-gray-700">
@@ -157,8 +179,8 @@ export function CreateBountyForm() {
                       Title
                     </FormLabel>
                     <FormControl className="">
-                      <Input 
-                        {...field} 
+                      <Input
+                        {...field}
                         className="bg-gray-900/50 text-white focus:outline-none border-gray-700 focus:border-purple-500 transition-colors"
                       />
                     </FormControl>
@@ -179,8 +201,8 @@ export function CreateBountyForm() {
                       Description
                     </FormLabel>
                     <FormControl>
-                      <Textarea 
-                        {...field} 
+                      <Textarea
+                        {...field}
                         className="bg-gray-900/50 text-white focus:outline-none resize-none border-gray-700 focus:border-purple-500 transition-colors min-h-32"
                       />
                     </FormControl>
@@ -201,8 +223,8 @@ export function CreateBountyForm() {
                       Requirements (one per line)
                     </FormLabel>
                     <FormControl>
-                      <Textarea 
-                        {...field} 
+                      <Textarea
+                        {...field}
                         className="bg-gray-900/50 text-white focus:outline-none resize-none border-gray-700 focus:border-purple-500 transition-colors"
                       />
                     </FormControl>

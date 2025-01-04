@@ -9,19 +9,28 @@ import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import type { SubmissionStatus } from "@prisma/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useBountyContract } from "@/hooks/useBountyContract";
 
 export function SubmissionDetails({ id }: { id: string }) {
   const { toast } = useToast();
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const [isCompletingBounty, setIsCompletingBounty] = useState(false);
 
   const {
     data: submission,
     isLoading,
-    refetch
+    refetch,
   } = api.submission.getById.useQuery(id);
 
+  const {
+    completeBounty,
+    isLoading: isContractLoading,
+    error: contractError,
+    isSuccess: isContractSuccess,
+  } = useBountyContract();
+
   const updateStatus = api.submission.updateStatus.useMutation({
-    onSuccess:async () => {
+    onSuccess: async () => {
       toast({
         title: "Status updated",
         description: "The submission status has been updated successfully",
@@ -42,7 +51,7 @@ export function SubmissionDetails({ id }: { id: string }) {
       setIsRecalculating(false);
       toast({
         title: "Score recalculated",
-        description: `New AI score: ${updatedSubmission.aiScore ?? 'N/A'}`,
+        description: `New AI score: ${updatedSubmission.aiScore ?? "N/A"}`,
       });
       await refetch();
     },
@@ -68,13 +77,45 @@ export function SubmissionDetails({ id }: { id: string }) {
     );
   }
 
-  const handleStatusUpdate = (status: SubmissionStatus) => {
-    updateStatus.mutate({ id: submission.id, status });
+  const handleStatusUpdate = async (status: SubmissionStatus) => {
+    if (status === "ACCEPTED") {
+      try {
+        setIsCompletingBounty(true);
+
+        // First complete the bounty on-chain
+        await completeBounty(submission.bountyId, submission.submitter.address);
+
+        // If the contract transaction is successful, update the status in the database
+        if (isContractSuccess) {
+          await updateStatus.mutateAsync({
+            id: submission.id,
+            status,
+          });
+
+          toast({
+            title: "Bounty completed",
+            description:
+              "The bounty has been completed and the reward has been transferred",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Error completing bounty",
+          description: contractError?.message ?? "Failed to complete bounty",
+          variant: "destructive",
+        });
+      } finally {
+        setIsCompletingBounty(false);
+      }
+    } else {
+      // For other statuses, just update in the database
+      updateStatus.mutate({ id: submission.id, status });
+    }
   };
 
-  const handleRecalculateScore = () => {
+  const handleRecalculateScore = async () => {
     setIsRecalculating(true);
-    recalculateScore.mutate(submission.id);
+    await recalculateScore.mutateAsync(submission.id);
   };
 
   const getScoreColor = (score: number | null) => {
@@ -108,7 +149,9 @@ export function SubmissionDetails({ id }: { id: string }) {
             {submission.status}
           </Badge>
           {submission.aiScore !== null && (
-            <div className={`text-sm font-medium ${getScoreColor(submission.aiScore)}`}>
+            <div
+              className={`text-sm font-medium ${getScoreColor(submission.aiScore)}`}
+            >
               AI Score: {submission.aiScore}/100
             </div>
           )}
@@ -132,48 +175,56 @@ export function SubmissionDetails({ id }: { id: string }) {
       </div>
 
       {submission.bounty.isOpen &&
-       submission.bounty.status === "ACTIVE" &&
-       submission.status === "PENDING" && (
-        <div className="space-y-4">
-          <div className="flex justify-end space-x-4">
-            <Button
-              variant="outline"
-              onClick={() => handleStatusUpdate("REJECTED")}
-            >
-              {updateStatus ? <LoadingSpinner /> : "Reject"}
-            </Button>
-            <Button
-              onClick={() => handleStatusUpdate("ACCEPTED")}
-
-            >
-              {updateStatus ? <LoadingSpinner /> : "Accept"}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => handleStatusUpdate("IMPROVED")}
-            >
-              {updateStatus ? <LoadingSpinner /> : "Request Improvements"}
-            </Button>
-          </div>
-          <div className="flex justify-end">
-            <Button
-              variant="outline"
-              onClick={handleRecalculateScore}
-              disabled={isRecalculating}
-              className="mt-2"
-            >
-              {isRecalculating ? (
-                <>
+        submission.bounty.status === "ACTIVE" &&
+        submission.status === "PENDING" && (
+          <div className="space-y-4">
+            <div className="flex justify-end space-x-4">
+              <Button
+                variant="outline"
+                onClick={() => handleStatusUpdate("REJECTED")}
+              >
+                {updateStatus.isPending ? <LoadingSpinner /> : "Reject"}
+              </Button>
+              <Button onClick={() => handleStatusUpdate("ACCEPTED")}>
+                {isCompletingBounty ? (
+                  <>
+                    <LoadingSpinner />
+                    Completing Bounty...
+                  </>
+                ) : (
+                  "Accept"
+                )}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => handleStatusUpdate("IMPROVED")}
+              >
+                {updateStatus.isPending ? (
                   <LoadingSpinner />
-                  Recalculating Score...
-                </>
-              ) : (
-                "Recalculate AI Score"
-              )}
-            </Button>
+                ) : (
+                  "Request Improvements"
+                )}
+              </Button>
+            </div>
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                onClick={handleRecalculateScore}
+                disabled={isRecalculating}
+                className="mt-2"
+              >
+                {isRecalculating ? (
+                  <>
+                    <LoadingSpinner />
+                    Recalculating Score...
+                  </>
+                ) : (
+                  "Recalculate AI Score"
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </Card>
   );
 }
