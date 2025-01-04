@@ -1,7 +1,6 @@
 "use client";
 
 import { WagmiProvider, createConfig, createStorage, http } from "wagmi";
-import { mainnet, sepolia } from "wagmi/chains";
 import { defineChain } from "viem";
 
 
@@ -10,7 +9,7 @@ export const educhain = defineChain({
   name: "EDU",
   nativeCurrency: { name: "EDU", symbol: "EDU", decimals: 18 },
   rpcUrls: {
-    default: { http: ["https://rpc.open-campus-codex.gelato.digital"] },
+    default: { http: ["https://open-campus-codex-sepolia.drpc.org"] },
   },
   blockExplorers: {
     default: {
@@ -21,17 +20,18 @@ export const educhain = defineChain({
 });
 
 
-const storage = createStorage({
-  storage: window.localStorage,
-  key: 'wagmi.cache',
-});
+const storage =
+   createStorage({
+      storage: window.localStorage,
+      key: 'wagmi.cache',
+    })
 
 
 
 const config = createConfig({
   chains: [educhain],
   transports: {
-    [educhain.id]: http("https://rpc.open-campus-codex.gelato.digital"),
+    [educhain.id]: http("https://open-campus-codex-sepolia.drpc.org"),
   },
   storage: storage,
 
