@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const createSubmissionSchema = z.object({
   content: z.string().min(1).max(10000),
-  bountyId: z.string()
+  bountyId: z.string(),
 });
 
 type FormData = z.infer<typeof createSubmissionSchema>;
@@ -29,13 +29,13 @@ export function CreateSubmissionForm() {
   const params = useParams();
   const bountyId = params.id as string;
   const { toast } = useToast();
-  
+
   const form = useForm<FormData>({
     resolver: zodResolver(createSubmissionSchema),
     defaultValues: {
       bountyId,
-      content: ""
-    }
+      content: "",
+    },
   });
 
   const createSubmission = api.submission.create.useMutation({
@@ -69,10 +69,10 @@ export function CreateSubmissionForm() {
             <FormItem>
               <FormLabel>Submission Content</FormLabel>
               <FormControl>
-                <Textarea 
+                <Textarea
                   placeholder="Enter your solution..."
                   className="min-h-[200px]"
-                  {...field} 
+                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -80,11 +80,8 @@ export function CreateSubmissionForm() {
           )}
         />
 
-        <Button 
-          type="submit" 
-          className="w-full"  
-        >
-          Submit
+        <Button type="submit" className="w-full">
+          {createSubmission ? "Submitting..." : "Create Submission"}
         </Button>
       </form>
     </Form>

@@ -6,7 +6,8 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useAuth } from "../providers/AuthProvider";
 
 export function UserSubmissions() {
-  const { data: submissions, isLoading } = api.submission.listUserSubmissions.useQuery({});
+  const { data: submissions, isLoading } =
+    api.submission.listUserSubmissions.useQuery({});
 
   if (isLoading) {
     return <LoadingSpinner />;

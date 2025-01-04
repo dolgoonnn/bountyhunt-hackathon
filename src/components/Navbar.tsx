@@ -38,12 +38,12 @@ export function Navbar() {
           {/* Logo and Navigation Links */}
           <div className="flex items-center space-x-8">
             <Link href="/" className="text-xl font-bold">
-            QuestHub
+              QuestHub
             </Link>
 
-            <div className="hidden md:flex items-center space-x-6">
+            <div className="hidden items-center space-x-6 md:flex">
               {navItems.map((item) =>
-                (!item.auth || session) ? (
+                !item.auth || session ? (
                   <Link
                     key={item.href}
                     href={item.href}
@@ -51,12 +51,12 @@ export function Navbar() {
                       "text-sm font-medium transition-colors hover:text-primary",
                       pathname === item.href
                         ? "text-foreground"
-                        : "text-muted-foreground"
+                        : "text-muted-foreground",
                     )}
                   >
                     {item.title}
                   </Link>
-                ) : null
+                ) : null,
               )}
             </div>
           </div>
@@ -65,14 +65,12 @@ export function Navbar() {
           <div className="flex items-center space-x-4">
             {session ? (
               <div className="flex items-center space-x-4">
-                <p className="hidden sm:block text-sm text-muted-foreground">
+                <p className="hidden text-sm text-muted-foreground sm:block">
                   {session.user?.address?.slice(0, 6)}...
                   {session.user?.address?.slice(-4)}
                 </p>
                 <Button variant="outline" asChild>
-                  <Link href="/dashboard">
-                    Profile
-                  </Link>
+                  <Link href="/dashboard">Profile</Link>
                 </Button>
               </div>
             ) : (

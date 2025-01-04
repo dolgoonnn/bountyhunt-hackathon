@@ -36,14 +36,14 @@ export const createTRPCContext = async (opts: {
   // const { headers, session } = opts;
   let session: Session | null = null;
 
-  const sessionHeader = opts.headers.get('x-session');
-  console.log("🚀 ~ sessionHeader:", sessionHeader)
+  const sessionHeader = opts.headers.get("x-session");
+  console.log("🚀 ~ sessionHeader:", sessionHeader);
   if (sessionHeader) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       session = JSON.parse(sessionHeader);
     } catch (e) {
-      console.error('Failed to parse session from header:', e);
+      console.error("Failed to parse session from header:", e);
     }
   }
   return {
@@ -119,7 +119,7 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 });
 
 const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-console.log("🚀 ~ enforceUserIsAuthed ~ ctx:", ctx.session)
+  console.log("🚀 ~ enforceUserIsAuthed ~ ctx:", ctx.session);
 
   if (!ctx.session?.user) {
     throw new TRPCError({ code: "UNAUTHORIZED" });

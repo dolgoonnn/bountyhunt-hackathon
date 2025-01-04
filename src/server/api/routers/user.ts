@@ -52,10 +52,10 @@ export const userRouter = createTRPCRouter({
 
       return user;
     }),
-    getMessageToSign: publicProcedure.query(() => {
-      console.log("Getting message to sign:", MESSAGE_TO_SIGN); // Debug log
-      return MESSAGE_TO_SIGN;
-    }),
+  getMessageToSign: publicProcedure.query(() => {
+    console.log("Getting message to sign:", MESSAGE_TO_SIGN); // Debug log
+    return MESSAGE_TO_SIGN;
+  }),
 
   verifyLogin: publicProcedure
     .input(
@@ -86,18 +86,18 @@ export const userRouter = createTRPCRouter({
           },
         });
       }
-         // Create the session
-         const session: Session = {
-          user: {
-            id: user.id,
-            address: user.address,
-            reputation: user.reputation,
-          },
-        };
+      // Create the session
+      const session: Session = {
+        user: {
+          id: user.id,
+          address: user.address,
+          reputation: user.reputation,
+        },
+      };
 
-        // Update the context with the new session
-        ctx.session = session;
-        console.log("🚀 ~ .mutation ~   ctx.session:",   ctx.session)
+      // Update the context with the new session
+      ctx.session = session;
+      console.log("🚀 ~ .mutation ~   ctx.session:", ctx.session);
 
       return {
         user: {

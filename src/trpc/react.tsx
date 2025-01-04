@@ -39,9 +39,9 @@ export type RouterOutputs = inferRouterOutputs<AppRouter>;
 
 export const getHeaders = () => {
   const session = useAuthStore.getState().session;
-  console.log("🚀 ~ getHeaders ~ session:", session)
+  console.log("🚀 ~ getHeaders ~ session:", session);
   return {
-    'x-session': session ? JSON.stringify(session) : '',
+    "x-session": session ? JSON.stringify(session) : "",
   };
 };
 
@@ -72,7 +72,6 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
       ],
     }),
   );
-
 
   return (
     <QueryClientProvider client={queryClient}>

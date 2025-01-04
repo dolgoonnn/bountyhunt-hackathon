@@ -25,9 +25,7 @@ export default function RootLayout({
           <WagmiProviderContext>
             <AuthProvider>
               <Navbar />
-              <main>
-                {children}
-              </main>
+              <main>{children}</main>
             </AuthProvider>
           </WagmiProviderContext>
         </TRPCReactProvider>

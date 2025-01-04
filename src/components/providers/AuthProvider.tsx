@@ -48,12 +48,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Initial setup and wallet status check
   useEffect(() => {
-    if (status === 'disconnected') {
+    if (status === "disconnected") {
       setHasInitialized(true);
       setIsLoading(false);
       if (session) setSession(null);
-    }
-    else if (status === 'connected' && address) {
+    } else if (status === "connected" && address) {
       setHasInitialized(true);
       if (session && session.user.address !== address) {
         setSession(null);

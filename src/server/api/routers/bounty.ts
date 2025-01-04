@@ -68,7 +68,7 @@ export const bountyRouter = createTRPCRouter({
       });
     }),
 
-    list: protectedProcedure
+  list: protectedProcedure
     .input(listBountiesSchema)
     .query(async ({ ctx, input }) => {
       const limit = input.limit ?? 20;
@@ -77,7 +77,7 @@ export const bountyRouter = createTRPCRouter({
 
       const bounties = await ctx.db.bounty.findMany({
         take: limit + 1,
-        where: filters,  // Now filters won't include the limit parameter
+        where: filters, // Now filters won't include the limit parameter
         cursor: cursor ? { id: cursor } : undefined,
         include: {
           creator: true,

@@ -14,10 +14,10 @@ export function SubmissionDetails({ id }: { id: string }) {
   const { toast } = useToast();
   const [isRecalculating, setIsRecalculating] = useState(false);
 
-  const { 
-    data: submission, 
+  const {
+    data: submission,
     isLoading,
-    refetch 
+    refetch
   } = api.submission.getById.useQuery(id);
 
   const updateStatus = api.submission.updateStatus.useMutation({
@@ -88,7 +88,7 @@ export function SubmissionDetails({ id }: { id: string }) {
     <Card className="p-6">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <Link 
+          <Link
             href={`/bounties/${submission.bountyId}`}
             className="text-sm text-muted-foreground hover:text-primary"
           >
@@ -131,8 +131,8 @@ export function SubmissionDetails({ id }: { id: string }) {
         </p>
       </div>
 
-      {submission.bounty.isOpen && 
-       submission.bounty.status === "ACTIVE" && 
+      {submission.bounty.isOpen &&
+       submission.bounty.status === "ACTIVE" &&
        submission.status === "PENDING" && (
         <div className="space-y-4">
           <div className="flex justify-end space-x-4">
@@ -144,7 +144,7 @@ export function SubmissionDetails({ id }: { id: string }) {
             </Button>
             <Button
               onClick={() => handleStatusUpdate("ACCEPTED")}
-              
+
             >
               {updateStatus ? <LoadingSpinner /> : "Accept"}
             </Button>
