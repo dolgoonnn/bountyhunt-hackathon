@@ -18,10 +18,27 @@ export const educhain = defineChain({
   },
 });
 
+const createNoopStorage = () => {
+  return {
+    getItem: (_key: string) => {
+      return null;
+    },
+    setItem: (_key: string, _value: string) => {
+      return undefined;
+    },
+    removeItem: (_key: string) => {
+      return undefined;
+    },
+  };
+};
+
 const storage = createStorage({
-  storage: window.localStorage,
+  storage: typeof window !== "undefined"
+    ? window.localStorage
+    : createNoopStorage(),
   key: "wagmi.cache",
 });
+
 
 const config = createConfig({
   chains: [educhain],
