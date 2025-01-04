@@ -11,8 +11,8 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   bounty: bountyRouter,
-  submission:submissionRouter,
-  user:userRouter
+  submission: submissionRouter,
+  user: userRouter,
 });
 
 // export type definition of API

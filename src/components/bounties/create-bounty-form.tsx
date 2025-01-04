@@ -17,6 +17,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/trpc/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { useBountyContract } from "@/hooks/useBountyContract";
+import { useEffect, useState } from "react";
 
 const createBountySchema = z.object({
   title: z.string().min(1).max(100),
@@ -31,6 +33,11 @@ type FormData = z.infer<typeof createBountySchema>;
 export function CreateBountyForm() {
   const router = useRouter();
   const { toast } = useToast();
+  const [currentFormData, setCurrentFormData] = useState<FormData | null>(null);
+  const [isPendingBlockchainTx, setIsPendingBlockchainTx] = useState(false);
+
+
+
   const form = useForm<FormData>({
     resolver: zodResolver(createBountySchema),
     defaultValues: {
@@ -38,7 +45,13 @@ export function CreateBountyForm() {
     },
   });
 
-  const createBounty = api.bounty.create.useMutation({
+  const {
+    createBounty: createBountyContract,
+    isLoading: isContractLoading,
+    error: contractError,hash, isSuccess
+  } = useBountyContract();
+
+  const createBountyMutation = api.bounty.create.useMutation({
     onSuccess: () => {
       toast({
         title: "Bounty created successfully",
@@ -46,14 +59,77 @@ export function CreateBountyForm() {
       });
       router.push("/bounties");
     },
+    onError: (error) => {
+      toast({
+        title: "Error creating bounty",
+        description: error.message,
+        variant: "destructive",
+      });
+      setCurrentFormData(null);
+
+      setIsPendingBlockchainTx(false);
+
+    },
   });
+
+  // Watch for successful transaction confirmation
+  useEffect(() => {
+    if (isSuccess && currentFormData && isPendingBlockchainTx) {
+      createBountyMutation.mutate({
+        title: currentFormData.title,
+        description: currentFormData.description,
+        requirements: currentFormData.requirements,
+        reward: currentFormData.reward,
+        isEducational: currentFormData.isEducational,
+      });
+      setCurrentFormData(null);
+    }
+  }, [isSuccess, currentFormData, isPendingBlockchainTx]);
+
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      if (isPendingBlockchainTx) return;
+      setCurrentFormData(data); // Store the form data
+      setIsPendingBlockchainTx(true);
+
+      // Create the bounty on the blockchain
+      await createBountyContract(
+        data.title,
+        data.reward.toString()
+      );
+
+      // The database mutation will be handled by the useEffect after transaction confirmation
+
+    } catch (error) {
+      console.error('Error creating bounty:', error);
+      toast({
+        title: "Error creating bounty",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      });
+      setCurrentFormData(null);
+      setIsPendingBlockchainTx(false);
+
+    }
+  };
+
+  // Show error if contract interaction fails
+  useEffect(() => {
+    if (contractError) {
+      toast({
+        title: "Contract Error",
+        description: contractError.message,
+        variant: "destructive",
+      });
+    }
+  }, [contractError, toast]);
+
+  const isSubmitting = isContractLoading || createBountyMutation.isPending;
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit((data) => createBounty.mutate(data))}
-        className="space-y-6"
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="title"
@@ -103,9 +179,11 @@ export function CreateBountyForm() {
             <FormItem>
               <FormLabel>Reward (ETH)</FormLabel>
               <FormControl>
-                <Input type="number" step="0.01" {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value))}
-
+                <Input
+                  type="number"
+                  step="0.01"
+                  {...field}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
                 />
               </FormControl>
               <FormMessage />
@@ -113,8 +191,12 @@ export function CreateBountyForm() {
           )}
         />
 
-        <Button type="submit" className="w-full">
-          Create Bounty
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isSubmitting || isContractLoading}
+        >
+          {isSubmitting || isContractLoading ? "Creating..." : "Create Bounty"}
         </Button>
       </form>
     </Form>

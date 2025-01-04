@@ -1,6 +1,6 @@
 "use client";
 
-import { api } from "@/trpc/react";;
+import { api } from "@/trpc/react";
 import { BountyCard } from "@/components/bounties/bounty-card";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 

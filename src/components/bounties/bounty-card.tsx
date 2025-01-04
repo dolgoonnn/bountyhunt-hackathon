@@ -10,7 +10,6 @@ import { formatDistance } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-
 //todo Add bounty submissions count
 
 export function BountyCard({ bounty }: { bounty: Bounty }) {

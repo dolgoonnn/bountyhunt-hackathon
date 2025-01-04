@@ -19,4 +19,3 @@ export default function SubmitPage({ params }: SubmitPageProps) {
       </div>
     </div>
   );
-}

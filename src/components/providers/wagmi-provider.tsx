@@ -3,7 +3,6 @@
 import { WagmiProvider, createConfig, createStorage, http } from "wagmi";
 import { defineChain } from "viem";
 
-
 export const educhain = defineChain({
   id: 656476,
   name: "EDU",
@@ -19,14 +18,10 @@ export const educhain = defineChain({
   },
 });
 
-
-const storage =
-   createStorage({
-      storage: window.localStorage,
-      key: 'wagmi.cache',
-    })
-
-
+const storage = createStorage({
+  storage: window.localStorage,
+  key: "wagmi.cache",
+});
 
 const config = createConfig({
   chains: [educhain],
@@ -34,8 +29,6 @@ const config = createConfig({
     [educhain.id]: http("https://open-campus-codex-sepolia.drpc.org"),
   },
   storage: storage,
-
-
 });
 
 export function WagmiProviderContext({

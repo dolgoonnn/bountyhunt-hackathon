@@ -1,6 +1,6 @@
 // src/stores/auth.ts
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { type Session } from "@/server/auth/types";
 
 interface AuthState {
@@ -15,7 +15,7 @@ export const useAuthStore = create<AuthState>()(
       setSession: (session) => set({ session }),
     }),
     {
-      name: 'auth-storage',
-    }
-  )
+      name: "auth-storage",
+    },
+  ),
 );
