@@ -2,6 +2,8 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
+
 
 const createSubmissionSchema = z.object({
   bountyId: z.string(),
@@ -12,9 +14,8 @@ const updateSubmissionStatusSchema = z.object({
   id: z.string(),
   status: z.enum(["PENDING", "ACCEPTED", "REJECTED", "IMPROVED"]),
 });
-
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 async function evaluateSubmission(content: string, requirements: string[]) {
@@ -27,14 +28,16 @@ ${requirements.map((req) => `- ${req}`).join("\n")}
 Submission:
 ${content}`;
 
-    const response = await client.messages.create({
-      model: "claude-3-5-sonnet-latest",
-      max_tokens: 1024,
+    const response = await client.chat.completions.create({
+      model: "gpt-3.5-turbo-0125",
       messages: [{ role: "user", content: prompt }],
+      max_tokens: 1024,
+      temperature: 0,
     });
 
-    const aiResponse = response?.content;
-    if (!aiResponse || typeof aiResponse !== "string") {
+    const aiResponse = response?.choices[0]?.message?.content;
+    console.log("🚀 ~ evaluateSubmission ~ aiResponse:", aiResponse)
+    if (!aiResponse) {
       throw new Error("Invalid response from AI");
     }
     const score = parseInt(aiResponse);
@@ -48,6 +51,7 @@ ${content}`;
     return null;
   }
 }
+
 
 export const submissionRouter = createTRPCRouter({
   create: protectedProcedure
@@ -77,6 +81,7 @@ export const submissionRouter = createTRPCRouter({
         });
       }
 
+      console.log("🚀 ~ .mutation ~ bounty.creatorId:", bounty.creatorId)
       if (bounty.creatorId === ctx.session.user.id) {
         throw new TRPCError({
           code: "BAD_REQUEST",
