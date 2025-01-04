@@ -1,57 +1,58 @@
 // app/bounties/submission/[id]/page.tsx
-'use client';
+"use client";
 
 import { api } from "@/trpc/react";
 import { Card } from "@/components/ui/card";
 import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { SubmissionDetails } from "@/components/submissions/submission-detail";
 
 interface SubmissionPageProps {
   params: {
-    id: string;
-  }
+    submissionId: string;
+  };
 }
 
 export default function SubmissionPage({ params }: SubmissionPageProps) {
-  const router = useRouter();
-  const { data: submission, isLoading, error } = api.submission.getById.useQuery(params.id);
+  // const router = useRouter();
+  // const { data: submission, isLoading, error } = api.submission.getById.useQuery(params.submissionId);
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto py-8">
-        <Card className="p-6">
-          <div className="flex justify-center">
-            <Loader className="h-6 w-6 animate-spin" />
-          </div>
-        </Card>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="container mx-auto py-8">
+  //       <Card className="p-6">
+  //         <div className="flex justify-center">
+  //           <Loader className="h-6 w-6 animate-spin" />
+  //         </div>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
 
-  if (error) {
-    return (
-      <div className="container mx-auto py-8">
-        <Card className="p-6">
-          <div className="text-red-500">Error: {error.message}</div>
-        </Card>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="container mx-auto py-8">
+  //       <Card className="p-6">
+  //         <div className="text-red-500">Error: {error.message}</div>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
 
-  if (!submission) {
-    return (
-      <div className="container mx-auto py-8">
-        <Card className="p-6">
-          <div>Submission not found</div>
-        </Card>
-      </div>
-    );
-  }
+  // if (!submission) {
+  //   return (
+  //     <div className="container mx-auto py-8">
+  //       <Card className="p-6">
+  //         <div>Submission not found</div>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="container mx-auto py-8">
-      <Card className="p-6">
+      {/* <Card className="p-6">
         <div className="space-y-6">
           <div>
             <h1 className="text-2xl font-bold">Submission Details</h1>
@@ -92,7 +93,8 @@ export default function SubmissionPage({ params }: SubmissionPageProps) {
             </div>
           )}
         </div>
-      </Card>
+      </Card> */}
+      {params && <SubmissionDetails id={params.submissionId} />}
     </div>
   );
 }

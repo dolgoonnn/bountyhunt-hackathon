@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 contract BountySystem {
     struct Bounty {
         address creator;
-        uint256 reward;
+        uint96 reward; // Reduced from uint256 to uint96 to pack with address
         bool isOpen;
         address winner;
     }
@@ -23,16 +23,20 @@ contract BountySystem {
     );
     event BountyCancelled(bytes32 indexed bountyId);
 
+    error BountyNotOpen();
+    error NotBountyCreator();
+    error InvalidWinner();
+    error TransferFailed();
+    error BountyExists();
+    error ZeroReward();
+
     function createBounty(bytes32 bountyId) external payable {
-        require(msg.value > 0, "Reward must be greater than 0");
-        require(
-            bounties[bountyId].creator == address(0),
-            "Bounty ID already exists"
-        );
+        if (msg.value == 0) revert ZeroReward();
+        if (bounties[bountyId].creator != address(0)) revert BountyExists();
 
         bounties[bountyId] = Bounty({
             creator: msg.sender,
-            reward: msg.value,
+            reward: uint96(msg.value), // Safe casting as rewards are unlikely to exceed uint96
             isOpen: true,
             winner: address(0)
         });
@@ -41,34 +45,37 @@ contract BountySystem {
     }
 
     function completeBounty(bytes32 bountyId, address winner) external {
+        // Cache storage pointer
         Bounty storage bounty = bounties[bountyId];
-        require(
-            bounty.creator == msg.sender,
-            "Only creator can complete bounty"
-        );
-        require(bounty.isOpen, "Bounty is not open");
-        require(winner != address(0), "Invalid winner address");
 
+        // Batch checks
+        if (bounty.creator != msg.sender) revert NotBountyCreator();
+        if (!bounty.isOpen) revert BountyNotOpen();
+        if (winner == address(0)) revert InvalidWinner();
+
+        // Update state before transfer to prevent reentrancy
+        uint256 reward = bounty.reward;
         bounty.isOpen = false;
         bounty.winner = winner;
 
-        uint256 reward = bounty.reward;
+        // Transfer reward
         (bool success, ) = winner.call{value: reward}("");
-        require(success, "Transfer failed");
+        if (!success) revert TransferFailed();
 
         emit BountyCompleted(bountyId, winner, reward);
     }
 
     function cancelBounty(bytes32 bountyId) external {
         Bounty storage bounty = bounties[bountyId];
-        require(bounty.creator == msg.sender, "Only creator can cancel bounty");
-        require(bounty.isOpen, "Bounty is not open");
 
-        bounty.isOpen = false;
+        if (bounty.creator != msg.sender) revert NotBountyCreator();
+        if (!bounty.isOpen) revert BountyNotOpen();
 
         uint256 reward = bounty.reward;
+        bounty.isOpen = false;
+
         (bool success, ) = bounty.creator.call{value: reward}("");
-        require(success, "Transfer failed");
+        if (!success) revert TransferFailed();
 
         emit BountyCancelled(bountyId);
     }

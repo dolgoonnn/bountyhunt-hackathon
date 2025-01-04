@@ -44,7 +44,7 @@ export function CreateSubmissionForm() {
         title: "Submission created successfully",
         description: "Your submission has been published",
       });
-      router.push(`/bounties/submission/${data.id}`);
+      router.push(`/bounties/${data.bountyId}`);
     },
     onError: (error) => {
       toast({
@@ -52,9 +52,8 @@ export function CreateSubmissionForm() {
         description: error.message,
         variant: "destructive",
       });
-    }
+    },
   });
-
 
   return (
     <Form {...form}>

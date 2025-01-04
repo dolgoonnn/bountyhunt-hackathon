@@ -34,14 +34,17 @@ export const bountyRouter = createTRPCRouter({
   create: protectedProcedure
     .input(createBountySchema)
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.bounty.create({
+const bounty= ctx.db.bounty.create({
         data: {
           ...input,
           creatorId: ctx.session.user.id,
           isOpen: true,
           status: "ACTIVE",
-        },
+
+        }
+
       });
+      return bounty
     }),
 
   update: protectedProcedure

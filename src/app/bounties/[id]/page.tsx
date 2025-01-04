@@ -9,7 +9,7 @@ export default function BountyPage({ params }: { params: { id: string } }) {
     <div className="container mx-auto py-8">
       <BountyDetails id={params.id} />
       <div className="mt-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold">Submissions</h2>
           <Link href={`/bounties/${params.id}/submit`}>
             <Button>Submit Solution</Button>
