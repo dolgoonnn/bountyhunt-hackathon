@@ -1,18 +1,31 @@
+// components/submissions/submission-card.tsx
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDistance } from "@/lib/utils";
-import type { Submission } from "@prisma/client";
 
+type SubmissionWithRelations = {
+  id: string;
+  bountyId: string;
+  submitterId: string;
+  content: string;
+  aiScore: number | null;
+  status: "PENDING" | "ACCEPTED" | "REJECTED" | "IMPROVED";
+  createdAt: Date;
+  submitter: {
+    id: string;
+    address: string;
+    reputation: number;
+  };
+};
 
-
-export function SubmissionCard({ submission }: { submission: Submission }) {
+export function SubmissionCard({ submission }: { submission: SubmissionWithRelations }) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
-            Submitted by {submission.submitterId.slice(0, 6)}...
-            {submission.submitterId.slice(-4)}
+            Submitted by {submission.submitter.address.slice(0, 6)}...
+            {submission.submitter.address.slice(-4)}
           </span>
           <span className="text-sm text-muted-foreground">•</span>
           <span className="text-sm text-muted-foreground">
@@ -37,14 +50,16 @@ export function SubmissionCard({ submission }: { submission: Submission }) {
   );
 }
 
-function getStatusVariant(status: Submission["status"]) {
+function getStatusVariant(
+  status: "PENDING" | "ACCEPTED" | "REJECTED" | "IMPROVED"
+) {
   switch (status) {
     case "ACCEPTED":
-      return "default"; // Changed from "success"
+      return "default";
     case "REJECTED":
       return "destructive";
     case "IMPROVED":
-      return "outline"; // Changed from "warning"
+      return "outline";
     default:
       return "secondary";
   }

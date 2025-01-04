@@ -1,4 +1,4 @@
-"use client";
+import { useState } from "react";
 import { api } from "@/trpc/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,22 +8,48 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import type { SubmissionStatus } from "@prisma/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function SubmissionDetails({ id }: { id: string }) {
   const { toast } = useToast();
+  const [isRecalculating, setIsRecalculating] = useState(false);
 
-  const { data: submission, isLoading } = api.submission.getById.useQuery(id);
+  const { 
+    data: submission, 
+    isLoading,
+    refetch 
+  } = api.submission.getById.useQuery(id);
 
   const updateStatus = api.submission.updateStatus.useMutation({
-    onSuccess: () => {
+    onSuccess:async () => {
       toast({
         title: "Status updated",
         description: "The submission status has been updated successfully",
       });
+      await refetch();
     },
     onError: (error) => {
       toast({
-        title: "Error",
+        title: "Error updating status",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const recalculateScore = api.submission.recalculateScore.useMutation({
+    onSuccess: async (updatedSubmission) => {
+      setIsRecalculating(false);
+      toast({
+        title: "Score recalculated",
+        description: `New AI score: ${updatedSubmission.aiScore ?? 'N/A'}`,
+      });
+      await refetch();
+    },
+    onError: (error) => {
+      setIsRecalculating(false);
+      toast({
+        title: "Error recalculating score",
         description: error.message,
         variant: "destructive",
       });
@@ -35,11 +61,27 @@ export function SubmissionDetails({ id }: { id: string }) {
   }
 
   if (!submission) {
-    return <div>Submission not found</div>;
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>Submission not found</AlertDescription>
+      </Alert>
+    );
   }
 
   const handleStatusUpdate = (status: SubmissionStatus) => {
     updateStatus.mutate({ id: submission.id, status });
+  };
+
+  const handleRecalculateScore = () => {
+    setIsRecalculating(true);
+    recalculateScore.mutate(submission.id);
+  };
+
+  const getScoreColor = (score: number | null) => {
+    if (score === null) return "text-muted-foreground";
+    if (score >= 80) return "text-green-600";
+    if (score >= 60) return "text-yellow-600";
+    return "text-red-600";
   };
 
   return (
@@ -61,9 +103,16 @@ export function SubmissionDetails({ id }: { id: string }) {
             {formatDistance(submission.createdAt)}
           </p>
         </div>
-        <Badge variant={getStatusVariant(submission.status)}>
-          {submission.status}
-        </Badge>
+        <div className="flex flex-col items-end gap-2">
+          <Badge variant={getStatusVariant(submission.status)}>
+            {submission.status}
+          </Badge>
+          {submission.aiScore !== null && (
+            <div className={`text-sm font-medium ${getScoreColor(submission.aiScore)}`}>
+              AI Score: {submission.aiScore}/100
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="mb-6">
@@ -85,33 +134,44 @@ export function SubmissionDetails({ id }: { id: string }) {
       {submission.bounty.isOpen && 
        submission.bounty.status === "ACTIVE" && 
        submission.status === "PENDING" && (
-        <div className="flex justify-end space-x-4">
-          <Button
-            variant="outline"
-            onClick={() => handleStatusUpdate("REJECTED")}
-          >
-            Reject
-          </Button>
-          <Button
-
-            onClick={() => handleStatusUpdate("ACCEPTED")}
-          >
-            Accept
-          </Button>
-          <Button
-            variant="secondary"
-
-            onClick={() => handleStatusUpdate("IMPROVED")}
-          >
-            Request Improvements
-          </Button>
-        </div>
-      )}
-
-      {updateStatus && (
-        <div className="mt-4 text-center text-muted-foreground">
-          <LoadingSpinner />
-          Updating status...
+        <div className="space-y-4">
+          <div className="flex justify-end space-x-4">
+            <Button
+              variant="outline"
+              onClick={() => handleStatusUpdate("REJECTED")}
+            >
+              {updateStatus ? <LoadingSpinner /> : "Reject"}
+            </Button>
+            <Button
+              onClick={() => handleStatusUpdate("ACCEPTED")}
+              
+            >
+              {updateStatus ? <LoadingSpinner /> : "Accept"}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => handleStatusUpdate("IMPROVED")}
+            >
+              {updateStatus ? <LoadingSpinner /> : "Request Improvements"}
+            </Button>
+          </div>
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              onClick={handleRecalculateScore}
+              disabled={isRecalculating}
+              className="mt-2"
+            >
+              {isRecalculating ? (
+                <>
+                  <LoadingSpinner />
+                  Recalculating Score...
+                </>
+              ) : (
+                "Recalculate AI Score"
+              )}
+            </Button>
+          </div>
         </div>
       )}
     </Card>
@@ -121,11 +181,11 @@ export function SubmissionDetails({ id }: { id: string }) {
 function getStatusVariant(status: SubmissionStatus) {
   switch (status) {
     case "ACCEPTED":
-      return "default" as const; // Changed from "success"
+      return "default" as const;
     case "REJECTED":
       return "destructive" as const;
     case "IMPROVED":
-      return "outline" as const; // Changed from "warning"
+      return "outline" as const;
     case "PENDING":
       return "secondary" as const;
     default:

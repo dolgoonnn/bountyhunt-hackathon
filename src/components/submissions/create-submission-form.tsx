@@ -27,7 +27,7 @@ type FormData = z.infer<typeof createSubmissionSchema>;
 export function CreateSubmissionForm() {
   const router = useRouter();
   const params = useParams();
-  const bountyId = params.id as string; // Get the ID from URL params
+  const bountyId = params.id as string;
   const { toast } = useToast();
   
   const form = useForm<FormData>({
@@ -39,14 +39,22 @@ export function CreateSubmissionForm() {
   });
 
   const createSubmission = api.submission.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Submission created successfully",
         description: "Your submission has been published",
       });
-      router.push(`/bounties/${bountyId}`); // Navigate back to the bounty page
+      router.push(`/bounties/submission/${data.id}`);
     },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   });
+
 
   return (
     <Form {...form}>
@@ -74,9 +82,9 @@ export function CreateSubmissionForm() {
 
         <Button 
           type="submit" 
-          className="w-full"
+          className="w-full"  
         >
-          {createSubmission ? "Submitting..." : "Create Submission"}
+          Submit
         </Button>
       </form>
     </Form>

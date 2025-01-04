@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import Anthropic from '@anthropic-ai/sdk';
 
 const createSubmissionSchema = z.object({
   bountyId: z.string(),
@@ -12,6 +13,45 @@ const updateSubmissionStatusSchema = z.object({
   status: z.enum(["PENDING", "ACCEPTED", "REJECTED", "IMPROVED"]),
 });
 
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+async function evaluateSubmission(
+  content: string,
+  requirements: string[],
+) {
+  try {
+    const prompt = `You are evaluating a submission for a bounty. Please score this submission from 0-100 based on how well it meets the requirements. Only respond with a number between 0 and 100.
+
+Requirements:
+${requirements.map((req) => `- ${req}`).join('\n')}
+
+Submission:
+${content}`;
+
+    const response = await client.messages.create({
+      model: 'claude-3-5-sonnet-latest',
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const aiResponse = response?.content;
+    if (!aiResponse || typeof aiResponse !== 'string') {
+      throw new Error('Invalid response from AI');
+    }
+    const score = parseInt(aiResponse);
+    if (isNaN(score) || score < 0 || score > 100) {
+      throw new Error('Invalid score received from AI');
+    }
+
+    return score;
+  } catch (error) {
+    console.error('Error evaluating submission:', error);
+    return null;
+  }
+}
+
 export const submissionRouter = createTRPCRouter({
   create: protectedProcedure
     .input(createSubmissionSchema)
@@ -22,6 +62,7 @@ export const submissionRouter = createTRPCRouter({
           isOpen: true,
           status: true,
           creatorId: true,
+          requirements: true,
         },
       });
 
@@ -60,12 +101,19 @@ export const submissionRouter = createTRPCRouter({
         });
       }
 
+      // Get AI score for the submission
+      const aiScore = await evaluateSubmission(
+        input.content,
+        bounty.requirements
+      );
+
       return ctx.db.submission.create({
         data: {
           bountyId: input.bountyId,
           submitterId: ctx.session.user.id,
           content: input.content,
           status: "PENDING",
+          aiScore: aiScore,
         },
         include: {
           submitter: {
@@ -314,5 +362,63 @@ export const submissionRouter = createTRPCRouter({
       }
 
       return submission;
+    }),
+
+  recalculateScore: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      const submission = await ctx.db.submission.findUnique({
+        where: { id: input },
+        include: {
+          bounty: {
+            select: {
+              creatorId: true,
+              requirements: true,
+            },
+          },
+        },
+      });
+
+      if (!submission) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Submission not found",
+        });
+      }
+
+      if (submission.bounty.creatorId !== ctx.session.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only the bounty creator can recalculate scores",
+        });
+      }
+
+      const aiScore = await evaluateSubmission(
+        submission.content,
+        submission.bounty.requirements
+      );
+
+      return ctx.db.submission.update({
+        where: { id: input },
+        data: { aiScore },
+        include: {
+          submitter: {
+            select: {
+              id: true,
+              address: true,
+              reputation: true,
+            },
+          },
+          bounty: {
+            select: {
+              id: true,
+              title: true,
+              reward: true,
+              status: true,
+              isOpen: true,
+            },
+          },
+        },
+      });
     }),
 });
