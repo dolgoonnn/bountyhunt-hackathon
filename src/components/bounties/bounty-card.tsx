@@ -12,7 +12,13 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowRight, Clock, Coins, Users } from "lucide-react";
 
-export function BountyCard({ bounty }: { bounty: Bounty }) {
+type BountyWithCount = Bounty & {
+  _count: {
+    submissions: number;
+  };
+};
+
+export function BountyCard({ bounty }: { bounty: BountyWithCount }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
