@@ -11,7 +11,7 @@
 //   let winner: SignerWithAddress;
 //   let otherAccount: SignerWithAddress;
 //   let bountyId: string;
-//   const reward = ethers.parseEther("1.0"); // 1 ETH
+//   const reward = ethers.parseEther("1.0"); // 1 EDU
 
 //   beforeEach(async function () {
 //     [owner, creator, winner, otherAccount] = await ethers.getSigners();

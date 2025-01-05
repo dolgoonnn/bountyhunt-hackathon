@@ -29,18 +29,18 @@ export function BountyCard({ bounty }: { bounty: BountyWithCount }) {
       <Card className="group overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 backdrop-blur-xl border-gray-700 hover:shadow-inner hover:shadow-purple-500 transition-all duration-300">
         <CardHeader className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-b border-gray-700/50">
           <div className="flex items-center justify-between">
-            <motion.h3 
+            <motion.h3
               className="text-xl font-semibold text-gray-200"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
             >
               {bounty.title}
             </motion.h3>
-            <Badge 
+            <Badge
               variant={bounty.isOpen ? "default" : "secondary"}
               className={`transition-all duration-300 ${
-                bounty.isOpen 
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600' 
+                bounty.isOpen
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'
                   : 'bg-gradient-to-r from-gray-500 to-slate-500'
               }`}
             >
@@ -48,14 +48,14 @@ export function BountyCard({ bounty }: { bounty: BountyWithCount }) {
             </Badge>
           </div>
         </CardHeader>
-        
+
         <CardContent className="mt-4">
           <p className="line-clamp-2 text-gray-300">
             {bounty.description}
           </p>
-          
+
           <div className="mt-6 grid grid-cols-2 gap-4">
-            <motion.div 
+            <motion.div
               className="rounded-lg bg-gray-800/50 p-4 flex items-center gap-3"
               whileHover={{ scale: 1.02 }}
             >
@@ -64,11 +64,11 @@ export function BountyCard({ bounty }: { bounty: BountyWithCount }) {
               </div>
               <div>
                 <p className="text-sm text-gray-400">Reward</p>
-                <p className="font-semibold text-gray-200">{bounty.reward} ETH</p>
+                <p className="font-semibold text-gray-200">{bounty.reward} EDU</p>
               </div>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="rounded-lg bg-gray-800/50 p-4 flex items-center gap-3"
               whileHover={{ scale: 1.02 }}
             >
@@ -90,9 +90,9 @@ export function BountyCard({ bounty }: { bounty: BountyWithCount }) {
               Posted {formatDistance(bounty.createdAt)}
             </p>
           </div>
-          
+
           <Link href={`/bounties/${bounty.id}`}>
-            <Button 
+            <Button
               className="group bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-none"
             >
               View Details
