@@ -56,11 +56,11 @@ export function BountyDetails({ id }: { id: string }) {
                 </div>
               </div>
             </motion.div>
-            <Badge 
+            <Badge
               variant={bounty.isOpen ? "default" : "secondary"}
               className={`transition-all duration-300 ${
-                bounty.isOpen 
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600' 
+                bounty.isOpen
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600'
                   : 'bg-gradient-to-r from-gray-500 to-slate-500'
               }`}
             >
@@ -127,7 +127,7 @@ export function BountyDetails({ id }: { id: string }) {
               <div>
                 <p className="text-sm text-gray-400">Reward</p>
                 <p className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  {bounty.reward} ETH
+                  {bounty.reward} EDU
                 </p>
               </div>
             </motion.div>
@@ -139,7 +139,7 @@ export function BountyDetails({ id }: { id: string }) {
                 transition={{ delay: 0.5 }}
               >
                 <Link href={`/bounties/${id}/submit`}>
-                  <Button 
+                  <Button
                     size="lg"
                     className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-none group"
                   >

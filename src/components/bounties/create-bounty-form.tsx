@@ -242,7 +242,7 @@ export function CreateBountyForm() {
                   <FormItem className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
                     <FormLabel className="flex items-center gap-2 text-gray-200">
                       <Coins className="h-4 w-4 text-purple-400" />
-                      Reward (ETH)
+                      Reward (EDU)
                     </FormLabel>
                     <FormControl>
                       <Input
