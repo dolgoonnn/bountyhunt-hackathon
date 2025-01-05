@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "@/trpc/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,9 @@ import type { SubmissionStatus } from "@prisma/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useBountyContract } from "@/hooks/useBountyContract";
 import { motion } from "framer-motion";
-import { 
-  ArrowLeft, ArrowRight, Bot, CheckCircle, ChevronRight, Clock, 
-  FileText, RefreshCw, Shield, ThumbsDown, Trophy, User, XCircle 
+import {
+  ArrowLeft, ArrowRight, Bot, CheckCircle, ChevronRight, Clock,
+  FileText, RefreshCw, Shield, ThumbsDown, Trophy, User, XCircle
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 
@@ -55,6 +55,9 @@ export function SubmissionDetails({ id }: { id: string }) {
   const { toast } = useToast();
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [isCompletingBounty, setIsCompletingBounty] = useState(false);
+  const [hasProcessedTransaction, setHasProcessedTransaction] = useState(false);
+
+  const [isPendingBlockchainTx, setIsPendingBlockchainTx] = useState(false);
   const {session} = useAuth()
   const {
     data: submission,
@@ -67,6 +70,7 @@ export function SubmissionDetails({ id }: { id: string }) {
     isLoading: isContractLoading,
     error: contractError,
     isSuccess: isContractSuccess,
+    hash
   } = useBountyContract();
 
   const updateStatus = api.submission.updateStatus.useMutation({
@@ -105,6 +109,30 @@ export function SubmissionDetails({ id }: { id: string }) {
     },
   });
 
+  // Watch for successful blockchain transaction
+  useEffect(() => {
+    const processTransaction = async () => {
+      if (isContractSuccess && hash && submission && !hasProcessedTransaction) {
+        setHasProcessedTransaction(true);
+        try {
+          await updateStatus.mutateAsync({
+            id: submission.id,
+            status: "ACCEPTED"
+          });
+          toast({
+            title: "Bounty completed",
+            description: "The bounty has been completed and the reward has been transferred",
+          });
+        } catch (error) {
+          console.error('Error updating submission status:', error);
+        }
+        setIsCompletingBounty(false);
+      }
+    };
+
+    void processTransaction();
+  }, [isContractSuccess, hash, submission?.id, hasProcessedTransaction, updateStatus, toast]);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -125,23 +153,18 @@ export function SubmissionDetails({ id }: { id: string }) {
     if (status === "ACCEPTED") {
       try {
         setIsCompletingBounty(true);
+        setHasProcessedTransaction(false); // Reset the flag before new transaction
         await completeBounty(submission.bountyId, submission.submitter.address);
-        if (isContractSuccess) {
-          await updateStatus.mutateAsync({ id: submission.id, status });
-          toast({
-            title: "Bounty completed",
-            description: "The bounty has been completed and the reward has been transferred",
-          });
-        }
       } catch (error) {
         toast({
           title: "Error completing bounty",
           description: contractError?.message ?? "Failed to complete bounty",
           variant: "destructive",
         });
-      } finally {
+        setHasProcessedTransaction(true); // Reset on error
         setIsCompletingBounty(false);
       }
+
     } else {
       updateStatus.mutate({ id: submission.id, status });
     }
@@ -171,7 +194,7 @@ export function SubmissionDetails({ id }: { id: string }) {
               <ArrowLeft className="w-4 h-4" />
               Back to Bounty
             </Link>
-            
+
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="text-2xl font-semibold text-gray-200 flex items-center gap-2">
@@ -192,7 +215,7 @@ export function SubmissionDetails({ id }: { id: string }) {
               </div>
 
               <div className="flex flex-col items-end gap-3">
-                <Badge 
+                <Badge
                   className={`bg-gradient-to-r ${statusConfig.gradient} ${statusConfig.hoverGradient} border-none transition-all duration-300`}
                 >
                   <statusConfig.icon className="w-3 h-3 mr-1" />
@@ -258,7 +281,7 @@ export function SubmissionDetails({ id }: { id: string }) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
               >
-      
+
 
                   <Link href={`/bounties/${submission.bountyId}/submit?update=${submission.id}`}>
                   <Button
@@ -297,7 +320,7 @@ export function SubmissionDetails({ id }: { id: string }) {
                   )}
                 </Button>
 
-                <Button 
+                <Button
                   onClick={() => handleStatusUpdate("ACCEPTED")}
                   className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white border-none"
                   disabled={isCompletingBounty}

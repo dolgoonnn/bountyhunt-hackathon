@@ -8,6 +8,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 export function BountyList() {
   const { data, isLoading } = api.bounty.list.useQuery({
     limit: 10,
+
   });
 
   if (isLoading) {

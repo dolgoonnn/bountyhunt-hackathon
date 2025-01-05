@@ -20,6 +20,7 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { FileText, Loader2, Send } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+// import toast
 
 const createSubmissionSchema = z.object({
   content: z.string().min(1).max(10000),
@@ -45,16 +46,28 @@ export function CreateSubmissionForm() {
 
   const createSubmission = api.submission.create.useMutation({
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
+     // Invalidate both bounty and submissions queries
+     await Promise.all([
+      queryClient.invalidateQueries({
         queryKey: [["bounty", "getById"], { id: data.bountyId }]
-      });
-      
+      }),
+      queryClient.invalidateQueries({
+        queryKey: [["submission", "list"], { bountyId: data.bountyId }]
+      })
+    ]);
+
       toast({
         title: "Submission created successfully",
         description: "Your submission has been published",
       });
-      
-      router.push(`/bounties/${data.bountyId}`);
+console.log(
+
+"submission delayed"
+)
+         // Add a small delay before navigation to ensure cache invalidation completes
+         setTimeout(() => {
+          router.push(`/bounties/${data.bountyId}`);
+        }, 500);
     },
     onError: (error) => {
       toast({
@@ -144,7 +157,7 @@ export function CreateSubmissionForm() {
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-purple-600/0 to-pink-600/0 group-hover:from-purple-600/50 group-hover:to-pink-600/50 transition-all duration-300"
                   initial={false}
-                  animate={{ 
+                  animate={{
                     x: createSubmission.isPending ? "100%" : "0%"
                   }}
                   transition={{ duration: 1, repeat: Infinity }}
