@@ -53,38 +53,38 @@ function getStatusConfig(status: "PENDING" | "ACCEPTED" | "REJECTED" | "IMPROVED
 }
 
 function getGradeConfig(score: number) {
-  if (score >= 90) return { 
-    label: "Outstanding", 
+  if (score >= 90) return {
+    label: "Outstanding",
     color: "from-emerald-400 to-green-400",
     description: "Exceptional quality submission"
   };
-  if (score >= 80) return { 
-    label: "Excellent", 
+  if (score >= 80) return {
+    label: "Excellent",
     color: "from-green-400 to-teal-400",
     description: "High quality submission"
   };
-  if (score >= 70) return { 
-    label: "Very Good", 
+  if (score >= 70) return {
+    label: "Very Good",
     color: "from-blue-400 to-cyan-400",
     description: "Above average submission"
   };
-  if (score >= 60) return { 
-    label: "Good", 
+  if (score >= 60) return {
+    label: "Good",
     color: "from-cyan-400 to-sky-400",
     description: "Meets expectations"
   };
-  if (score >= 50) return { 
-    label: "Fair", 
+  if (score >= 50) return {
+    label: "Fair",
     color: "from-yellow-400 to-amber-400",
     description: "Needs some improvement"
   };
-  if (score >= 30) return { 
-    label: "Poor", 
+  if (score >= 30) return {
+    label: "Poor",
     color: "from-orange-400 to-amber-400",
     description: "Significant improvements needed"
   };
-  return { 
-    label: "Insufficient", 
+  return {
+    label: "Insufficient",
     color: "from-red-400 to-rose-400",
     description: "Does not meet minimum requirements"
   };
@@ -96,7 +96,7 @@ export function SubmissionCard({ submission }: { submission: SubmissionWithRelat
 
   const gradeConfig = submission.aiScore !== null ? getGradeConfig(submission.aiScore) : null;
 
-  return (
+return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -135,7 +135,7 @@ export function SubmissionCard({ submission }: { submission: SubmissionWithRelat
             transition={{ delay: 0.2 }}
             className="whitespace-pre-wrap text-gray-300"
           >
-            {submission.submitterId === session?.user.id ? submission.content : `Submitted by ${submission.submitterId}`}
+            {submission.submitterId === session?.user.id ? submission.content :`Submitted by ${submission.submitterId}`}
           </motion.p>
 
           <div className="flex items-center justify-between">
@@ -147,12 +147,12 @@ export function SubmissionCard({ submission }: { submission: SubmissionWithRelat
                 className="flex items-center gap-3 bg-gradient-to-br from-gray-800/40 to-gray-800/20 rounded-lg p-6 w-full backdrop-blur-sm border border-gray-700/30 shadow-lg"
               >
                 <div className="relative">
-                  <motion.div 
+                  <motion.div
                     className="p-3 rounded-full bg-gradient-to-r from-purple-500/30 to-pink-500/30 relative overflow-hidden"
                     whileHover={{ scale: 1.05 }}
                     transition={{ type: "spring", stiffness: 400 }}
                   >
-                    <Bot className="w-5 h-5 text-purple-300" />
+                    <Bot className="w-5 h-5 text-purple-100" />
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20"
                       animate={{
@@ -181,7 +181,7 @@ export function SubmissionCard({ submission }: { submission: SubmissionWithRelat
                   </motion.div>
                 </div>
 
-                <div className="flex-1">
+<div className="flex-1">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium text-gray-300">AI Score</p>
@@ -199,36 +199,40 @@ export function SubmissionCard({ submission }: { submission: SubmissionWithRelat
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.4 }}
                       className="px-3 py-1 rounded-full bg-gradient-to-r border border-gray-700/50"
-                      style={{
-                        backgroundImage: `linear-gradient(to right, ${gradeConfig.color.split(' ')[1]}, ${gradeConfig.color.split(' ')[3]})`
-                      }}
+                      style={{backgroundImage:`linear-gradient(to right, ${gradeConfig.color.split(' ')[1]}, ${gradeConfig.color.split(' ')[3]})`}}
                     >
                       <span className="text-xs font-semibold text-white">
                         {gradeConfig.label}
                       </span>
                     </motion.div>
                   </div>
-                  
+
                   <div className="mt-2">
                     <div className="relative w-full h-3 bg-gray-700/50 rounded-full overflow-hidden">
                       <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${submission.aiScore}%` }}
-                        transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
-                        className="h-full rounded-full relative"
+                        initial={{ width: "0%" }}
+                        animate={{ width:`${submission.aiScore}%` }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 50,
+                          damping: 20,
+                          delay: 0.2
+                        }}
+                        className="h-full rounded-full bg-gradient-to-r from-purple-500/80 to-pink-500/80 relative"
                         style={{
-                          backgroundImage: `linear-gradient(to right, ${gradeConfig.color.split(' ')[1]}, ${gradeConfig.color.split(' ')[3]})`
+                       backgroundImage: `linear-gradient(to right, ${gradeConfig.color.split(' ')[1]}, ${gradeConfig.color.split(' ')[3]})`
                         }}
                       >
                         <motion.div
-                          className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"
+                          className="absolute inset-0 "
                           animate={{
                             x: ["0%", "100%"],
                           }}
                           transition={{
                             duration: 1.5,
                             repeat: Infinity,
-                            ease: "linear"
+                            ease: "linear",
+                            delay: 2
                           }}
                         />
                       </motion.div>
@@ -248,7 +252,7 @@ export function SubmissionCard({ submission }: { submission: SubmissionWithRelat
                         initial={{ opacity: 0, scale: 0.5 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.7, type: "spring" }}
-                        className="min-w-16 text-right"
+                        className="min-w-16 text-right "
                       >
                         <span className="text-lg font-bold bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
                           {submission.aiScore}/100
