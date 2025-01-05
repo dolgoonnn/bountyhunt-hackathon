@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { FileText, Loader2, Send } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 const createSubmissionSchema = z.object({
   content: z.string().min(1).max(10000),
@@ -28,6 +29,7 @@ const createSubmissionSchema = z.object({
 type FormData = z.infer<typeof createSubmissionSchema>;
 
 export function CreateSubmissionForm() {
+  const queryClient = useQueryClient()
   const router = useRouter();
   const params = useParams();
   const bountyId = params.id as string;
@@ -42,11 +44,16 @@ export function CreateSubmissionForm() {
   });
 
   const createSubmission = api.submission.create.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({
+        queryKey: [["bounty", "getById"], { id: data.bountyId }]
+      });
+      
       toast({
         title: "Submission created successfully",
         description: "Your submission has been published",
       });
+      
       router.push(`/bounties/${data.bountyId}`);
     },
     onError: (error) => {
@@ -57,7 +64,6 @@ export function CreateSubmissionForm() {
       });
     },
   });
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
