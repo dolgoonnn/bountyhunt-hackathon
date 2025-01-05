@@ -1,8 +1,11 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { formatDistance } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Calendar, CheckCircle, User, Bot, XCircle, Clock, RefreshCw } from "lucide-react";
+import { Calendar, CheckCircle, User, Bot, XCircle, Clock, RefreshCw, ArrowRight, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { useAuth } from "../providers/AuthProvider";
 
 type SubmissionWithRelations = {
   id: string;
@@ -49,8 +52,49 @@ function getStatusConfig(status: "PENDING" | "ACCEPTED" | "REJECTED" | "IMPROVED
   return configs[status];
 }
 
+function getGradeConfig(score: number) {
+  if (score >= 90) return { 
+    label: "Outstanding", 
+    color: "from-emerald-400 to-green-400",
+    description: "Exceptional quality submission"
+  };
+  if (score >= 80) return { 
+    label: "Excellent", 
+    color: "from-green-400 to-teal-400",
+    description: "High quality submission"
+  };
+  if (score >= 70) return { 
+    label: "Very Good", 
+    color: "from-blue-400 to-cyan-400",
+    description: "Above average submission"
+  };
+  if (score >= 60) return { 
+    label: "Good", 
+    color: "from-cyan-400 to-sky-400",
+    description: "Meets expectations"
+  };
+  if (score >= 50) return { 
+    label: "Fair", 
+    color: "from-yellow-400 to-amber-400",
+    description: "Needs some improvement"
+  };
+  if (score >= 30) return { 
+    label: "Poor", 
+    color: "from-orange-400 to-amber-400",
+    description: "Significant improvements needed"
+  };
+  return { 
+    label: "Insufficient", 
+    color: "from-red-400 to-rose-400",
+    description: "Does not meet minimum requirements"
+  };
+}
+
 export function SubmissionCard({ submission }: { submission: SubmissionWithRelations }) {
   const statusConfig = getStatusConfig(submission.status);
+  const { session } = useAuth();
+
+  const gradeConfig = submission.aiScore !== null ? getGradeConfig(submission.aiScore) : null;
 
   return (
     <motion.div
@@ -76,7 +120,7 @@ export function SubmissionCard({ submission }: { submission: SubmissionWithRelat
               </span>
             </div>
           </div>
-          <Badge 
+          <Badge
             className={`bg-gradient-to-r ${statusConfig.gradient} ${statusConfig.hoverGradient} transition-all duration-300 border-none`}
           >
             <statusConfig.icon className="w-3 h-3 mr-1" />
@@ -85,43 +129,137 @@ export function SubmissionCard({ submission }: { submission: SubmissionWithRelat
         </CardHeader>
 
         <CardContent className="mt-4 space-y-4">
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
             className="whitespace-pre-wrap text-gray-300"
           >
-            {submission.content}
+            {submission.submitterId === session?.user.id ? submission.content : `Submitted by ${submission.submitterId}`}
           </motion.p>
-          
-          {submission.aiScore !== null && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="flex items-center gap-3 bg-gray-800/30 rounded-lg p-4"
-            >
-              <div className="p-2 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20">
-                <Bot className="w-4 h-4 text-purple-400" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">AI Score</p>
-                <div className="flex items-center gap-2">
-                  <div className="w-32 h-2 bg-gray-700 rounded-full overflow-hidden">
+
+          <div className="flex items-center justify-between">
+            {submission.aiScore !== null && gradeConfig && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                className="flex items-center gap-3 bg-gradient-to-br from-gray-800/40 to-gray-800/20 rounded-lg p-6 w-full backdrop-blur-sm border border-gray-700/30 shadow-lg"
+              >
+                <div className="relative">
+                  <motion.div 
+                    className="p-3 rounded-full bg-gradient-to-r from-purple-500/30 to-pink-500/30 relative overflow-hidden"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ type: "spring", stiffness: 400 }}
+                  >
+                    <Bot className="w-5 h-5 text-purple-300" />
                     <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${submission.aiScore}%` }}
-                      transition={{ delay: 0.5, duration: 0.8 }}
-                      className={`h-full rounded-full bg-gradient-to-r ${statusConfig.gradient}`}
+                      className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20"
+                      animate={{
+                        rotate: [0, 360],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
                     />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-300">
-                    {submission.aiScore}/100
-                  </span>
+                  </motion.div>
+                  <motion.div
+                    className="absolute -top-1 -right-1"
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      opacity: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    }}
+                  >
+                    <Sparkles className="w-3 h-3 text-purple-400" />
+                  </motion.div>
                 </div>
-              </div>
-            </motion.div>
-          )}
+
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-gray-300">AI Score</p>
+                      <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 }}
+                        className="text-sm text-gray-400"
+                      >
+                        Evaluation
+                      </motion.div>
+                    </div>
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.4 }}
+                      className="px-3 py-1 rounded-full bg-gradient-to-r border border-gray-700/50"
+                      style={{
+                        backgroundImage: `linear-gradient(to right, ${gradeConfig.color.split(' ')[1]}, ${gradeConfig.color.split(' ')[3]})`
+                      }}
+                    >
+                      <span className="text-xs font-semibold text-white">
+                        {gradeConfig.label}
+                      </span>
+                    </motion.div>
+                  </div>
+                  
+                  <div className="mt-2">
+                    <div className="relative w-full h-3 bg-gray-700/50 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${submission.aiScore}%` }}
+                        transition={{ delay: 0.5, duration: 1, ease: "easeOut" }}
+                        className="h-full rounded-full relative"
+                        style={{
+                          backgroundImage: `linear-gradient(to right, ${gradeConfig.color.split(' ')[1]}, ${gradeConfig.color.split(' ')[3]})`
+                        }}
+                      >
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"
+                          animate={{
+                            x: ["0%", "100%"],
+                          }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: "linear"
+                          }}
+                        />
+                      </motion.div>
+                    </div>
+
+                    <div className="mt-2 flex justify-between items-center">
+                      <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.6 }}
+                        className="text-xs text-gray-400"
+                      >
+                        {gradeConfig.description}
+                      </motion.p>
+
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.7, type: "spring" }}
+                        className="min-w-16 text-right"
+                      >
+                        <span className="text-lg font-bold bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
+                          {submission.aiScore}/100
+                        </span>
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </div>
         </CardContent>
       </Card>
     </motion.div>

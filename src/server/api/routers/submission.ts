@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 
 

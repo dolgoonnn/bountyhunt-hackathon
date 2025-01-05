@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useBountyContract } from "@/hooks/useBountyContract";
 import { motion } from "framer-motion";
 import { 
-  ArrowLeft, Bot, CheckCircle, ChevronRight, Clock, 
+  ArrowLeft, ArrowRight, Bot, CheckCircle, ChevronRight, Clock, 
   FileText, RefreshCw, Shield, ThumbsDown, Trophy, User, XCircle 
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
@@ -251,6 +251,26 @@ export function SubmissionDetails({ id }: { id: string }) {
               </p>
             </div>
           </motion.div>
+
+          {submission.status === "IMPROVED" && submission.submitterId === session?.user.id ?(
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+      
+
+                  <Link href={`/bounties/${submission.bountyId}/submit?update=${submission.id}`}>
+                  <Button
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-none group"
+                    size="sm"
+                    >
+                    Update Submission
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </motion.div>
+            ) : null}
 
           {/* Actions Section */}
           {submission.bounty.isOpen && submission.bounty.status === "ACTIVE" && submission.status === "PENDING" && session?.user.id !== submission.submitter.id && (
