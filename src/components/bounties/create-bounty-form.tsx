@@ -59,6 +59,7 @@ export function CreateBountyForm() {
   const [isPendingBlockchainTx, setIsPendingBlockchainTx] = useState(false);
 
   const form = useForm<FormData>({
+
     resolver: zodResolver(createBountySchema),
     defaultValues: {
       isEducational: false,
